@@ -2,12 +2,16 @@
 """
 Presence analyzer unit tests.
 """
+from __future__ import unicode_literals
+
 import os.path
 import json
 import datetime
 import unittest
 
-from presence_analyzer import main, views, utils
+import main
+import views
+import utils
 
 
 TEST_DATA_CSV = os.path.join(
@@ -42,6 +46,49 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 302)
         assert resp.headers['Location'].endswith('/presence_weekday.html')
 
+    def test_mean_time_weekday_view(self):
+        """
+        Test mean presence time of given user grouped by weekday.
+        """
+        resp_user_not_found = self.client.get('/api/v1/mean_time_weekday/0')
+        self.assertEqual(resp_user_not_found.status_code, 404)
+        resp = self.client.get('/api/v1/mean_time_weekday/10')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+        data = json.loads(resp.data)
+        correct_data = [
+            ['Mon', 0],
+            ['Tue', 30047.0],
+            ['Wed', 24465.0],
+            ['Thu', 23705.0],
+            ['Fri', 0],
+            ['Sat', 0],
+            ['Sun', 0],
+        ]
+        self.assertEqual(data, correct_data)
+
+    def test_presence_weekday_view(self):
+        """
+        Test total presence time of given user grouped by weekday.
+        """
+        resp_404 = self.client.get('/api/v1/presence_weekday/0')
+        self.assertEqual(resp_404.status_code, 404)
+        resp = self.client.get('/api/v1/presence_weekday/10')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+        data = json.loads(resp.data)
+        correct_data = [
+            ['Weekday', 'Presence (s)'],
+            ['Mon', 0],
+            ['Tue', 30047],
+            ['Wed', 24465],
+            ['Thu', 23705],
+            ['Fri', 0],
+            ['Sat', 0],
+            ['Sun', 0],
+        ]
+        self.assertEqual(data, correct_data)
+
     def test_api_users(self):
         """
         Test users listing.
@@ -51,7 +98,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.content_type, 'application/json')
         data = json.loads(resp.data)
         self.assertEqual(len(data), 2)
-        self.assertDictEqual(data[0], {u'user_id': 10, u'name': u'User 10'})
+        self.assertDictEqual(data[0], {'user_id': 10, 'name': 'User 10'})
 
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
@@ -85,6 +132,52 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
             data[10][sample_date]['start'],
             datetime.time(9, 39, 5)
         )
+
+    def test_group_by_weekday(self):
+        """
+        Test grouping presence entries by weekday.
+        """
+        data = utils.get_data()
+        correct_data = [[], [30047], [24465], [23705], [], [], []]
+        self.assertEqual(utils.group_by_weekday(data[10]), correct_data)
+
+    def test_seconds_since_midnight(self):
+        """
+        Test calculating the amount of seconds since midnight.
+        """
+        self.assertEqual(
+            0, utils.seconds_since_midnight(datetime.time(0, 0, 0)),
+        )
+        self.assertEqual(
+            36610,
+            utils.seconds_since_midnight(datetime.time(10, 10, 10)),
+        )
+
+    def test_interval(self):
+        """
+        Test calculating the interval in seconds
+        between two datetime.time objects.
+        """
+        self.assertEqual(
+            0,
+            utils.interval(datetime.time(0, 0, 0), datetime.time(0, 0, 0))
+        )
+        self.assertEqual(
+            -5,
+            utils.interval(datetime.time(0, 1, 0), datetime.time(0, 0, 55))
+        )
+        self.assertEqual(
+            3675,
+            utils.interval(datetime.time(0, 0, 0), datetime.time(1, 1, 15))
+        )
+
+    def test_mean(self):
+        """
+        Test calculating arithmetic mean.
+        """
+        self.assertEqual(0, utils.mean([]))
+        self.assertEqual(2.5, utils.mean([5, 0]))
+        self.assertAlmostEqual(1.914213, utils.mean([8**0.5, 1]), places=5)
 
 
 def suite():
