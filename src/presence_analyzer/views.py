@@ -9,7 +9,13 @@ import logging
 from flask import abort, redirect
 
 from main import app
-from utils import get_data, group_by_weekday, jsonify, mean
+from utils import (
+    get_data,
+    group_by_weekday,
+    jsonify,
+    mean,
+    start_end_time,
+)
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
@@ -51,7 +57,6 @@ def mean_time_weekday_view(user_id):
         (calendar.day_abbr[weekday], mean(intervals))
         for weekday, intervals in enumerate(weekdays)
     ]
-
     return result
 
 
@@ -73,4 +78,28 @@ def presence_weekday_view(user_id):
     ]
 
     result.insert(0, ('Weekday', 'Presence (s)'))
+    return result
+
+
+@app.route('/api/v1/presence_start_end/<int:user_id>', methods=['GET'])
+@jsonify
+def presence_start_end(user_id):
+    """
+    Returns average start-end presence time of
+    given user grouped by weekday.
+    """
+    data = get_data()
+    if user_id not in data:
+        log.debug('User %s not found!', user_id)
+        abort(404)
+
+    scratch = start_end_time(data[user_id])
+    result = [
+        (
+            calendar.day_abbr[day],
+            mean(intervals['start']),
+            mean(intervals['end']),
+        )
+        for day, intervals in scratch.items()
+    ]
     return result
