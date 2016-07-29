@@ -4,15 +4,15 @@ Helper functions used in views.
 """
 
 import csv
-from json import dumps
-from functools import wraps
+import logging
+
 from datetime import datetime
-
 from flask import Response
-
+from functools import wraps
+from json import dumps
 from main import app
 
-import logging
+
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
@@ -102,3 +102,30 @@ def mean(items):
     Calculates arithmetic mean. Returns zero for empty lists.
     """
     return float(sum(items)) / len(items) if len(items) > 0 else 0
+
+
+def start_end_time(user_data):
+    """
+    Returns dict which keys are weekdays numbers and values are
+    dicts containings lists of  starting/end times.
+
+    It creates a structure like this:
+    result = {
+        0: {
+            'start': [...],
+            'end': [...],
+        }
+        ...
+        6: {
+            'start': [...],
+            'end': [...],
+        }
+    }
+    """
+    result = {i: {'start': [], 'end': []} for i in range(7)}
+    for data in user_data:
+        start = user_data[data]['start']
+        end = user_data[data]['end']
+        result[data.weekday()]['start'].append(seconds_since_midnight(start))
+        result[data.weekday()]['end'].append(seconds_since_midnight(end))
+    return result

@@ -100,6 +100,29 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(len(data), 2)
         self.assertDictEqual(data[0], {'user_id': 10, 'name': 'User 10'})
 
+    def test_presence_start_end(self):
+        """
+        Test correctness of average start-end presence time of
+        given user. Result must be sorted by weekday.
+        """
+        resp_404 = self.client.get('/api/v1/presence_start_end/0')
+        self.assertEqual(resp_404.status_code, 404)
+        resp = self.client.get('/api/v1/presence_start_end/10')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+        correct_data = [
+            ['Mon', 0, 0],
+            ['Tue', 34745.0, 64792.0],
+            ['Wed', 33592.0, 58057.0],
+            ['Thu', 38926.0, 62631.0],
+            ['Fri', 0, 0],
+            ['Sat', 0, 0], 
+            ['Sun', 0, 0],
+        ]
+
+        data = json.loads(resp.data)
+        self.assertEqual(correct_data, data)
+
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
     """
@@ -178,6 +201,23 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertEqual(0, utils.mean([]))
         self.assertEqual(2.5, utils.mean([5, 0]))
         self.assertAlmostEqual(1.914213, utils.mean([8**0.5, 1]), places=5)
+
+    def test_start_end_time(self):
+        """
+        Test creating a correct data of start-end times
+        structure for given user data.
+        """
+        data = utils.get_data()
+        correct_data = {
+            0: {'start': [], 'end': []},
+            1: {'start': [34745], 'end': [64792]},
+            2: {'start': [33592], 'end': [58057]},
+            3: {'start': [38926], 'end': [62631]},
+            4: {'start': [], 'end': []},
+            5: {'start': [], 'end': []},
+            6: {'start': [], 'end': []},
+        }
+        self.assertEqual(correct_data, utils.start_end_time(data[10]))
 
 
 def suite():
