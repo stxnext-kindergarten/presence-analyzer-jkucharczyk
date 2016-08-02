@@ -46,6 +46,15 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 302)
         assert resp.headers['Location'].endswith('/presence_weekday.html')
 
+    def test_render_templates(self):
+        """
+        Test rendering .html files to view.
+        """
+        resp_404 = self.client.get('/certainly_not_existing_page.foobar/')
+        self.assertEqual(resp_404.status_code, 404)
+        resp = self.client.get('/presence_start_end.html/')
+        self.assertEqual(resp.status_code, 200)
+
     def test_mean_time_weekday_view(self):
         """
         Test mean presence time of given user grouped by weekday.

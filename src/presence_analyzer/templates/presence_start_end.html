@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %} Presence start-end weekday {% endblock %}
+{% block javascript %}  
+    <script src="{{ url_for('static', filename='/js/parse_interval.js') }}"></script>
+    <script src="{{ url_for('static', filename='/js/presence_start_end.js') }}"></script>
+{% endblock %}

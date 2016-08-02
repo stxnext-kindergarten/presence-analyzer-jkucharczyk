@@ -6,7 +6,8 @@ Defines views.
 import calendar
 import logging
 
-from flask import abort, redirect
+from flask import abort, redirect, render_template
+from jinja2 import TemplateNotFound
 
 from main import app
 from utils import (
@@ -25,7 +26,20 @@ def mainpage():
     """
     Redirects to front page.
     """
-    return redirect('/static/presence_weekday.html')
+    return redirect('/presence_weekday.html')
+
+
+@app.route('/<string:template_name>/', methods=['GET'])
+def render_templates(template_name):
+    """
+    Render .html file to view.
+    """
+    if not template_name.endswith('.html'):
+        template_name = '{}.html'.format(template_name)
+    try:
+        return render_template(template_name, template_name=template_name)
+    except TemplateNotFound:
+        abort(404)
 
 
 @app.route('/api/v1/users', methods=['GET'])
