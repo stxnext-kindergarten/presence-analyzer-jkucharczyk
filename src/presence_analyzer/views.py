@@ -6,8 +6,8 @@ Defines views.
 import calendar
 import logging
 
-from flask import abort, redirect, render_template
-from jinja2 import TemplateNotFound
+from flask import abort, redirect
+from flask_mako import render_template, TemplateError
 
 from main import app
 from utils import (
@@ -37,8 +37,8 @@ def render_templates(template_name):
     if not template_name.endswith('.html'):
         template_name = '{}.html'.format(template_name)
     try:
-        return render_template(template_name, template_name=template_name)
-    except TemplateNotFound:
+        return render_template(template_name, name=template_name)
+    except TemplateError:
         abort(404)
 
 
