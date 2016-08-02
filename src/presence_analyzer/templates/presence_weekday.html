@@ -1,5 +1,5 @@
-{% extends "base.html" %}
-{% block title %} Presence by weekday {% endblock %}
-{% block javascript %}  
-    <script src="{{ url_for('static', filename='/js/presence_weekday.js') }}"></script>
-{% endblock %}
+<%inherit file="base.html"/>
+<%block name="title"> Presence by weekday </%block>
+<%block name="javascript"> 
+    <script src=${url_for('static', filename='/js/presence_weekday.js')}></script>
+</%block>
