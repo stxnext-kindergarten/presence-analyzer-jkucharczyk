@@ -8,10 +8,12 @@ import logging
 
 from flask import abort, redirect
 from flask_mako import render_template, TemplateError
+from mako.exceptions import TopLevelLookupException
 
 from main import app
 from utils import (
     get_data,
+    get_xml,
     group_by_weekday,
     jsonify,
     mean,
@@ -47,7 +49,7 @@ def render_templates(template_name):
         template_name = '{}.html'.format(template_name)
     try:
         return render_template(template_name, name=template_name)
-    except TemplateError:
+    except (TemplateError, TopLevelLookupException):
         abort(404)
 
 
@@ -57,11 +59,7 @@ def users_view():
     """
     Users listing for dropdown.
     """
-    data = get_data()
-    return [
-        {'user_id': i, 'name': 'User {0}'.format(str(i))}
-        for i in data.keys()
-    ]
+    return get_xml()
 
 
 @app.route('/api/v1/mean_time_weekday/<int:user_id>', methods=['GET'])

@@ -4,7 +4,10 @@
 
 import os
 import sys
+import urllib2
+
 from functools import partial
+from presence_analyzer import app
 
 import paste.script.command
 import werkzeug.script
@@ -38,6 +41,17 @@ def make_debug(global_conf={}, **conf):
     from werkzeug.debug import DebuggedApplication
     app = make_app(global_conf, config=DEBUG_CFG, debug=True)
     return DebuggedApplication(app, evalex=True)
+
+
+# bin/update_xml
+def update_xml(config=DEPLOY_CFG):
+    """
+    Downloads fresh XML data from given url.
+    """
+    app.config.from_pyfile(abspath(config))
+    url_read = urllib2.urlopen(app.config['URL_XML']).read()
+    with open('runtime/data/users.xml', 'w') as file:
+        file.write(url_read)
 
 
 # bin/flask-ctl shell
