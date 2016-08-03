@@ -5,15 +5,41 @@ Helper functions used in views.
 
 import csv
 import logging
+import threading
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Response
 from functools import wraps
 from json import dumps
 from main import app
 
-
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
+
+CACHE = {}
+
+
+def memoize(secs=600):
+    """
+    Caches values of a function and stores them for a given period of time.
+    """
+    def decorator(func):
+        def wrapped_func():
+            """
+            Returns data if cache didn't expire, else gets fresh one.
+            """
+            lock = threading.Lock()
+            with lock:
+                current_time = datetime.now()
+                fname = func.__name__  # Stores function name
+                if fname in CACHE and current_time <= CACHE[fname]['expire']:
+                    return CACHE[fname]['data']
+                CACHE[fname] = {
+                    'expire': current_time + timedelta(seconds=secs),
+                    'data': func(),
+                }
+                return CACHE[fname]['data']
+        return wrapped_func
+    return decorator
 
 
 def jsonify(function):
@@ -32,6 +58,7 @@ def jsonify(function):
     return inner
 
 
+@memoize()
 def get_data():
     """
     Extracts presence data from CSV file and groups it by user_id.

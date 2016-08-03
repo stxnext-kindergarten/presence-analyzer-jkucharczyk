@@ -38,6 +38,15 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         """
         pass
 
+    def test_memoize(self):
+        utils.get_data()
+        self.assertTrue('expire' in utils.CACHE['get_data'])
+        self.assertTrue('data' in utils.CACHE['get_data'])
+        utils.CACHE.clear()
+        utils.get_data()
+        self.assertTrue('expire' in utils.CACHE['get_data'])
+        self.assertTrue('data' in utils.CACHE['get_data'])
+
     def test_mainpage(self):
         """
         Test main page redirect.

@@ -29,6 +29,15 @@ def mainpage():
     return redirect('/presence_weekday.html')
 
 
+@app.route('/favicon.ico')
+def favicon():
+    """
+    Prevents from rendering favicon.ico by render_templates method.
+    Returns response code 404 as favicon.ico currently does not exist.
+    """
+    abort(404)
+
+
 @app.route('/<string:template_name>/', methods=['GET'])
 def render_templates(template_name):
     """
