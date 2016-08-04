@@ -17,6 +17,9 @@ import utils
 TEST_DATA_CSV = os.path.join(
     os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_data.csv'
 )
+TEST_DATA_XML = os.path.join(
+    os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_users.xml'
+)
 
 
 # pylint: disable=maybe-no-member, too-many-public-methods
@@ -29,7 +32,10 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         """
         Before each test, set up a environment.
         """
-        main.app.config.update({'DATA_CSV': TEST_DATA_CSV})
+        main.app.config.update({
+            'DATA_CSV': TEST_DATA_CSV,
+            'DATA_XML': TEST_DATA_XML
+        })
         self.client = main.app.test_client()
 
     def tearDown(self):
@@ -115,8 +121,11 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content_type, 'application/json')
         data = json.loads(resp.data)
-        self.assertEqual(len(data), 2)
-        self.assertDictEqual(data[0], {'user_id': 10, 'name': 'User 10'})
+        correct_data = {
+            'name': 'Adam P.',
+            'avatar_url': 'https://intranet.stxnext.pl:443/api/images/users/141'
+        }
+        self.assertEqual(data['141'], correct_data)
 
     def test_presence_start_end(self):
         """
@@ -134,7 +143,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             ['Wed', 33592.0, 58057.0],
             ['Thu', 38926.0, 62631.0],
             ['Fri', 0, 0],
-            ['Sat', 0, 0], 
+            ['Sat', 0, 0],
             ['Sun', 0, 0],
         ]
 
@@ -151,7 +160,10 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         """
         Before each test, set up a environment.
         """
-        main.app.config.update({'DATA_CSV': TEST_DATA_CSV})
+        main.app.config.update({
+            'DATA_CSV': TEST_DATA_CSV,
+            'DATA_XML': TEST_DATA_XML
+        })
 
     def tearDown(self):
         """
@@ -173,6 +185,16 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
             data[10][sample_date]['start'],
             datetime.time(9, 39, 5)
         )
+
+    def test_get_xml(self):
+        """
+        Test parsing of XML file.
+        """
+        data = utils.get_xml()
+        self.assertIsInstance(data, dict)
+        self.assertItemsEqual(data['141']['name'], 'Adam P.')
+        sample_url = 'https://intranet.stxnext.pl:443/api/images/users/165'
+        self.assertEqual(sample_url, data['165']['avatar_url'])
 
     def test_group_by_weekday(self):
         """

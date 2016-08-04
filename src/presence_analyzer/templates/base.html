@@ -39,14 +39,17 @@
             <h2><%block name="title"/></h2>
             <p>
                 <select id="user_id" style="display: none">
-                    <option value="">--</option>
+                    <option value="0">--</option>
                 </select>
+            </p>
+                <img id="user_img" src="" style="display: inline">
                 <div id="chart_div" style="display: none">
                 </div>
                 <div id="loading">
                     <img src=${url_for('static', filename='/img/loading.gif')} />
                 </div>
-            </p>
+                <p id="user_no_data", style="display: none">No data for this user.</p>
+            
         </div>
     </div>
 </body>

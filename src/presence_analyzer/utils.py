@@ -5,12 +5,16 @@ Helper functions used in views.
 
 import csv
 import logging
+import re
 import threading
 
 from datetime import datetime, timedelta
 from flask import Response
 from functools import wraps
 from json import dumps
+from lxml import etree
+from operator import itemgetter
+
 from main import app
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
@@ -95,6 +99,47 @@ def get_data():
 
             data.setdefault(user_id, {})[date] = {'start': start, 'end': end}
 
+    return data
+
+
+@memoize()
+def get_xml():
+    """
+    Extracts presence data from XML file and sorts it by user name.
+
+    It creates structure like this:
+    data = [
+        {
+            'user_id': 1,
+            'name': 'Michał B.',
+            'avatar_url': 'intranet.stxnext.pl/api/img/1',
+        },
+        {
+            'user_id': 142,
+            'name': 'Marek K.',
+            'avatar_url': 'intranet.stxnext.pl/api/img/142',
+        },
+    ]
+    """
+    with open(app.config['DATA_XML'], 'r') as xmlfile:
+        tree = etree.parse(xmlfile)
+        server = tree.find('server')
+        host = server.find('host').text
+        protocol = server.find('protocol').text
+        port = server.find('port').text
+        users = tree.find('users')
+        data = {
+            user.get('id'): {
+                'name': user.find('name').text,
+                'avatar_url': "{}://{}:{}{}".format(
+                    protocol,
+                    host,
+                    port,
+                    user.find('avatar').text
+                ),
+            }
+            for user in users.findall('user')
+        }
     return data
 
 
