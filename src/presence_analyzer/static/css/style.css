@@ -25,25 +25,28 @@ body {
             list-style: none;
             padding: 0;
             margin: 0;
+            width: 800px;
+            display: table;
+            table-layout: fixed;
         }
-        
+
         #header li {
-            float: left;
+            display: table-cell;
             border: 1px solid #bbb;
             border-bottom-width: 0;
             margin: 0;
         }
-        
+
         #header a {
             text-decoration: none;
             display: block;
             background: #eee;
             padding: 0.24em 1em;
             color: #00c;
-            width: 12em;
+            width: auto;
             text-align: center;
         }
-        
+
         #header a:hover {
             background: #ddf;
         }
@@ -51,7 +54,7 @@ body {
         #header #selected {
             border-color: black;
         }
-        
+
         #header #selected a {
             position: relative;
             top: 1px;

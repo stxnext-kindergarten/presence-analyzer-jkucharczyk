@@ -5,7 +5,6 @@ Helper functions used in views.
 
 import csv
 import logging
-import re
 import threading
 
 from datetime import datetime, timedelta
@@ -13,7 +12,6 @@ from flask import Response
 from functools import wraps
 from json import dumps
 from lxml import etree
-from operator import itemgetter
 
 from main import app
 
@@ -63,6 +61,86 @@ def jsonify(function):
 
 
 @memoize()
+def get_data_by_month():
+    """
+    Gets data for common users in DATA_CSV file and USERS.xml.
+
+    It creates structure like this:
+    data = {
+        '2011': {
+            '01': {
+                'user_id': {
+                    'worked_hours': '404',
+                    'avatar_url': 'https://google.com/12'
+                }
+            }
+            '02': {
+                'user_id': {
+                    'worked_hours': '404',
+                    'avatar_url': 'https://google.com/15'
+                }
+            }
+        }
+        '2012': {
+            '01': {
+                'user_id': {
+                    'worked_hours': '480',
+                    'avatar_url': 'https://google.com/13'
+                }
+            }
+        }
+    }
+    """
+    data = {}
+    xml_data = get_xml()
+    users_list = xml_data.keys()
+    with open(app.config['DATA_CSV'], 'r') as csvfile:
+        presence_reader = csv.reader(csvfile, delimiter=',')
+        for i, row in enumerate(presence_reader):
+            if len(row) != 4:
+                # ignore header and footer lines
+                continue
+
+            try:
+                user_id = str(row[0])
+                date = datetime.strptime(row[1], '%Y-%m-%d').date()
+                start = datetime.strptime(row[2], '%H:%M:%S').time()
+                end = datetime.strptime(row[3], '%H:%M:%S').time()
+            except (ValueError, TypeError):
+                log.debug('Problem with line %d: ', i, exc_info=True)
+            else:
+                year = str(date.year)
+                month = '{:02.0f}'.format(date.month)
+                worked_time = interval(start, end) / 3600.0
+                if user_id in users_list:
+                    if year not in data:
+                        data[year] = {}
+                    if month not in data[year]:
+                        data[year][month] = {}
+                    if user_id not in data[year][month]:
+                        data[year][month][user_id] = {
+                            'worked_hours': 0,
+                            'avatar_url': xml_data[user_id]['avatar_url']
+                        }
+                    data[year][month][user_id]['worked_hours'] += worked_time
+    return data
+
+
+def get_monthly_data(year, month):
+    """
+    Returns data from given year and month.
+    """
+    data = get_data_by_month()
+    xml_data = get_xml()
+    monthly_data = data[year][month]
+    result = {
+        xml_data[x]['name']: monthly_data[x]
+        for x in monthly_data.keys()
+    }
+    return result
+
+
+@memoize()
 def get_data():
     """
     Extracts presence data from CSV file and groups it by user_id.
@@ -109,13 +187,11 @@ def get_xml():
 
     It creates structure like this:
     data = [
-        {
-            'user_id': 1,
+        '11': {
             'name': 'Michał B.',
             'avatar_url': 'intranet.stxnext.pl/api/img/1',
         },
-        {
-            'user_id': 142,
+        '142': {
             'name': 'Marek K.',
             'avatar_url': 'intranet.stxnext.pl/api/img/142',
         },

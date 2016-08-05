@@ -1,6 +1,17 @@
 <%inherit file="base.html"/>
 <%block name="title"> Presence mean time by weekday </%block>
 <%block name="javascript"> 
-    <script src=${url_for('static', filename='/js/parse_interval.js')}></script>
-    <script src=${url_for('static', filename='/js/mean_time_weekday.js')}></script>
+	<script src=${url_for('static', filename='/js/parse_interval.js')}></script>
+	<script src=${url_for('static', filename='/js/mean_time_weekday.js')}></script>
+</%block>
+<%block name="content">
+	<p>	
+		<select id="user_id" style="display: none">
+			<option value="0">--</option>
+		</select>
+	</p>
+	<img id="user_img" src="" style="display: inline">
+</%block>
+<%block name="no_user_data">
+	<p id="user_no_data", style="display: none">No data for this user.</p>
 </%block>

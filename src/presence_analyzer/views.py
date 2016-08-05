@@ -5,6 +5,7 @@ Defines views.
 
 import calendar
 import logging
+import operator
 
 from flask import abort, redirect
 from flask_mako import render_template, TemplateError
@@ -13,6 +14,8 @@ from mako.exceptions import TopLevelLookupException
 from main import app
 from utils import (
     get_data,
+    get_data_by_month,
+    get_monthly_data,
     get_xml,
     group_by_weekday,
     jsonify,
@@ -53,13 +56,56 @@ def render_templates(template_name):
         abort(404)
 
 
+@app.route('/api/v1/years', methods=['GET'])
+@jsonify
+def years_view():
+    """
+    Sorted years listing for a dropdown.
+    """
+    data = get_data_by_month()
+    return list(sorted(data.keys()))
+
+
+@app.route('/api/v1/top_employees/<string:year>/', methods=['GET'])
+@jsonify
+def months_view(year):
+    """
+    Sorted months listing for dropdown.
+    """
+    data = get_data_by_month()
+    if year in data.keys():
+        return [
+            (month, calendar.month_name[int(month)])
+            for month in sorted(data[year].keys())
+        ]
+    abort(404)
+
+
 @app.route('/api/v1/users', methods=['GET'])
 @jsonify
 def users_view():
     """
-    Users listing for dropdown.
+    Sorted users listing for dropdown.
     """
     return get_xml()
+
+
+@app.route('/api/v1/top_employees/<string:year>/<string:month>/', methods=['GET'])
+@jsonify
+def top_employees_by_month_view(year, month):
+    """
+    Returns a dict of users in given year-month sorted by worked_hours.
+    """
+    try:
+        data = get_monthly_data(year, month)
+    except KeyError:
+        abort(404)
+    else:
+        return sorted(
+            data.items(),
+            key=lambda x: operator.getitem(x[1], 'worked_hours'),
+            reverse=True,
+        )
 
 
 @app.route('/api/v1/mean_time_weekday/<int:user_id>', methods=['GET'])

@@ -23,8 +23,8 @@
                 user_img.attr('src', data_img[selected_user]);;
                 $.ajax({
                     type: 'HEAD',
-                    url: "/api/v1/presence_start_end/"+selected_user,
-                    success: $.getJSON("/api/v1/presence_start_end/"+selected_user, function(result) {
+                    url: "/api/v1/presence_start_end/" + selected_user,
+                    success: $.getJSON("/api/v1/presence_start_end/" + selected_user, function(result) {
                         $.each(result, function(index, value) {
                             value[1] = parseInterval(value[1]);
                             value[2] = parseInterval(value[2]);

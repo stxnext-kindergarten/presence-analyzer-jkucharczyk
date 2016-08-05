@@ -33,5 +33,25 @@
 			<avatar>/api/images/users/36</avatar>
 			<name>Anna W.</name>
 		</user>
+		<user id="10">
+			<avatar>/api/images/users/10</avatar>
+			<name>Jacek K.</name>
+		</user>
+		<user id="11">
+			<avatar>/api/images/users/11</avatar>
+			<name>Marcin P.</name>
+		</user>
+		<user id="5123">
+			<avatar>/api/images/users/11</avatar>
+			<name>Marcin J.</name>
+		</user>
+		<user id="12">
+			<avatar>/api/images/users/12</avatar>
+			<name>Kacper P.</name>
+		</user>
+		<user id="13">
+			<avatar>/api/images/users/13</avatar>
+			<name>Marek K.</name>
+		</user>
 	</users>
 </intranet>
