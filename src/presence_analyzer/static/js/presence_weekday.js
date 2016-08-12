@@ -23,8 +23,8 @@
                 user_img.attr('src', data_img[selected_user]);;
                 $.ajax({
                     type: 'HEAD',
-                    url: "/api/v1/mean_time_weekday/"+selected_user,
-                    success: $.getJSON("/api/v1/presence_weekday/"+selected_user, function(result) {
+                    url: "/api/v1/mean_time_weekday/" + selected_user,
+                    success: $.getJSON("/api/v1/presence_weekday/" + selected_user, function(result) {
                         var data = google.visualization.arrayToDataTable(result),
                             options = {};
                         chart_div.show();

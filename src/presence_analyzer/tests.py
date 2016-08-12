@@ -70,6 +70,47 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         resp = self.client.get('/presence_start_end.html/')
         self.assertEqual(resp.status_code, 200)
 
+    def test_years_view(self):
+        """
+        Test sorted years listing.
+        """
+        resp = self.client.get('/api/v1/years')
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertEqual(data[0], '1999')
+        self.assertEqual(data[1], '2013')
+
+    def test_months_view(self):
+        """
+        Tests sorted months listing.
+        """
+        resp_404 = self.client.get('/api/v1/top_employees/2099/')
+        self.assertEqual(resp_404.status_code, 404)
+        resp = self.client.get('/api/v1/top_employees/1999/')
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertEqual(data[0][0], '09')
+        self.assertEqual(data[0][1], 'September')
+
+    def test_users_view(self):
+        """
+        Test only if /api/v1/users exist. Expected return is being tested by
+        test_get_xml(self) method.
+        """
+        resp = self.client.get('/api/v1/users')
+        self.assertEqual(resp.status_code, 200)
+
+    def test_top_employees_by_month_view(self):
+        """
+        Test sorting users in given year-month by worked_hours.
+        """
+        resp_404 = self.client.get('/api/v1/top_employees/1900/19/')
+        self.assertEqual(resp_404.status_code, 404)
+        resp = self.client.get('/api/v1/top_employees/2013/09/')
+        data = json.loads(resp.data)
+        self.assertEqual(data[0][0], 'Marcin J.')
+        self.assertEqual(data[2][0], 'Jacek K.')
+
     def test_mean_time_weekday_view(self):
         """
         Test mean presence time of given user grouped by weekday.
@@ -171,13 +212,39 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         """
         pass
 
+    def test_get_data_by_month(self):
+        """
+        Test obtaining the data in the right format.
+        """
+        data = utils.get_data_by_month()
+        correct_data = {
+            'avatar_url':
+                'https://intranet.stxnext.pl:443/api/images/users/10',
+            'worked_hours': 21.726944444444445,
+        }
+
+        self.assertEqual(data['2013']['09']['10'], correct_data)
+
+    def test_get_monthly_data(self):
+        """
+        Test obtaining data from given year and month.
+        """
+        data = utils.get_monthly_data('2013', '09')
+        self.assertEqual(len(data), 3)
+        correct_data = {
+            'avatar_url':
+            'https://intranet.stxnext.pl:443/api/images/users/11',
+            'worked_hours': 32.88944444444444,
+        }
+        self.assertEqual(data['Marcin P.'], correct_data)
+
     def test_get_data(self):
         """
         Test parsing of CSV file.
         """
         data = utils.get_data()
         self.assertIsInstance(data, dict)
-        self.assertItemsEqual(data.keys(), [10, 11])
+        self.assertItemsEqual(data.keys(), [10, 11, 12, 13, 5123])
         sample_date = datetime.date(2013, 9, 10)
         self.assertIn(sample_date, data[10])
         self.assertItemsEqual(data[10][sample_date].keys(), ['start', 'end'])

@@ -1,7 +1,8 @@
 <% pages = [
     ("presence_weekday.html", "Presence by weekday"),
     ("mean_time_weekday.html", "Presence mean time"),
-    ("presence_start_end.html", "Presence start-end")
+    ("presence_start_end.html", "Presence start-end"),
+    ("top_employees.html", "Hall of Fame"),
 ]%>
 <!doctype html>
 <html lang=en>
@@ -14,6 +15,7 @@
     <meta name="viewport" content="width=device-width; initial-scale=1.0">
     <link href=${url_for('static', filename='/css/normalize.css')} media="all" rel="stylesheet" type="text/css"/>
     <link href=${url_for('static', filename='/css/style.css')} media="all" rel="stylesheet" type="text/css"/>
+    <%block name="css"/>
     <script src=${url_for('static', filename='/js/jquery.min.js')}></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
@@ -25,31 +27,25 @@
     <div id="main">
         <div id="header">
             <h1>Presence analyzer</h1>
+            <ul>
             % for url, title in pages:
-            	<ul>
             	% if name == url:
             		<li id="selected"><a href="${url_for('render_templates', template_name=url)}">${title}</a></li>
             	% else:
             		<li><a href="${url_for('render_templates', template_name=url)}">${title}</a></li>
                 % endif
-            	</ul>
         	% endfor
+            </ul>
         </div>
         <div id="content">
             <h2><%block name="title"/></h2>
-            <p>
-                <select id="user_id" style="display: none">
-                    <option value="0">--</option>
-                </select>
-            </p>
-                <img id="user_img" src="" style="display: inline">
+                <%block name="content"/>
                 <div id="chart_div" style="display: none">
                 </div>
                 <div id="loading">
                     <img src=${url_for('static', filename='/img/loading.gif')} />
                 </div>
-                <p id="user_no_data", style="display: none">No data for this user.</p>
-            
+                <%block name="no_user_data"/>
         </div>
     </div>
 </body>
