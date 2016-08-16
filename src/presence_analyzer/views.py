@@ -4,6 +4,7 @@ Defines views.
 """
 
 import calendar
+import locale
 import logging
 import operator
 
@@ -24,6 +25,8 @@ from utils import (
 )
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
+
+locale.setlocale(locale.LC_COLLATE, 'pl_PL.UTF-8')
 
 
 @app.route('/')
@@ -87,7 +90,13 @@ def users_view():
     """
     Sorted users listing for dropdown.
     """
-    return get_xml()
+    data = get_xml()
+    result = sorted(
+        data.items(),
+        key=lambda x: x[1]['name'],
+        cmp=locale.strcoll,
+    )
+    return result
 
 
 @app.route('/api/v1/top_employees/<string:year>/<string:month>/', methods=['GET'])
