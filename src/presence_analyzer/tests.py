@@ -166,7 +166,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             'name': 'Adam P.',
             'avatar_url': 'https://intranet.stxnext.pl:443/api/images/users/141'
         }
-        self.assertEqual(data['141'], correct_data)
+        self.assertEqual(data[0][1], correct_data)
 
     def test_presence_start_end(self):
         """

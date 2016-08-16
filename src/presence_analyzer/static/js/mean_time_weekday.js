@@ -5,8 +5,8 @@
             var dropdown = $("#user_id");
             data_img = {};
             $.each(result, function(item) {
-                dropdown.append($("<option />").val(item).text(this.name));
-                data_img[item] = this.avatar_url;
+                dropdown.append($("<option />").val(this[0]).text(this[1]["name"]));
+                data_img[this[0]] = this[1]["avatar_url"];
             });
             dropdown.show();
             loading.hide();
